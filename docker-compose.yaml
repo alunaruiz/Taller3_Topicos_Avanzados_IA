@@ -1,0 +1,38 @@
+version: '2'
+
+networks:
+  mlflow-network:
+
+services:
+  minio:
+    container_name: Minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=supersecret
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+      - MLFLOW_S3_IGNORE_TLS=true
+      - BACKEND_STORE_URI="mysql://root:123456@db/db"
+      - ARTIFACT_ROOT="s3://mlflows3/artifacts"
+    image: quay.io/minio/minio:latest
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./minio:/data
+    networks:
+      - mlflow-network
+    restart: unless-stopped
+    
+  db:
+    container_name: db
+    image: mysql
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: db
+    hostname: db
+    volumes:
+      - ./FS:/var/lib/mysql
+    networks:
+      - mlflow-network
