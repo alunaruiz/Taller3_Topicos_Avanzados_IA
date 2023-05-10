@@ -1,6 +1,6 @@
 #Taller No. 3 Topicos Avanzados en Inteligencia Artificial.
 #Integrantes: Daniel Chavarro - Alexander Luna Ruiz
-#EL taller consta de las siguientes caravterísticas:
+#El taller consta de las siguientes características:
 
 Preparación del dataset: En este caso, se puede tener un archivo de Jupyter Notebook o un archivo Python separado para la limpieza y transformación del dataset. Este archivo se puede llamar "preparacion_dataset.ipynb" o "preparacion_dataset.py".
 
