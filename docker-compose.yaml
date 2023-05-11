@@ -6,14 +6,16 @@ networks:
 services:
   minio:
     container_name: Minio
-    command: server /data --console-address ":9001"
+    command: server /data --console-address ":8000"
     environment:
       - MINIO_ROOT_USER=admin
       - MINIO_ROOT_PASSWORD=supersecret
-      - MLFLOW_S3_ENDPOINT_URL=http://minio:9000
+      - MLFLOW_S3_ENDPOINT_URL=http://minio:8000
       - MLFLOW_S3_IGNORE_TLS=true
       - BACKEND_STORE_URI="mysql://root:123456@db/db"
       - ARTIFACT_ROOT="s3://mlflows3/artifacts"
+      - MINIO_S3_STRICT_ACL=off
+      - MINIO_REGION_NAME=sa-east-1
     image: quay.io/minio/minio:latest
     ports:
       - '8000:8000'
@@ -22,7 +24,8 @@ services:
     networks:
       - mlflow-network
     restart: unless-stopped
-    
+
+#Base de datos MySQL para almacenar la data
   db:
     container_name: db
     image: mysql
@@ -34,5 +37,37 @@ services:
     hostname: db
     volumes:
       - ./FS:/var/lib/mysql
+    networks:
+      - mlflow-network
+
+#API de consumo de datos
+  app_a:
+    build: ./APIA
+    ports:
+      - "8501:8501"
+      - "8001:8001"
+    volumes:
+      - ./APIA:/APIA:rw
+      - ./F/data/covertype:/F/data/covertype:rw
+    environment:
+      MYSQL_HOST: db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: 123456
+      MYSQL_DATABASE: db
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "1"
+          memory: 800M
+    networks:
+      - mlflow-network
+
+  jupyter:
+    build: ./notebook
+    ports:
+      - 8888:8888   
+    volumes:
+      - ./notebook:/notebook:rw
     networks:
       - mlflow-network
